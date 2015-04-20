@@ -14,7 +14,8 @@ public class PlayerController : MonoBehaviour {
 	public KeyCode upBtn;
 	public KeyCode downBtn;
 	public KeyCode actionBtn;
-	public AudioClip shootSound;
+	
+	public AudioClip pickupSound;
 	public AudioClip deathSound;
 
 	public bool isRespawing = false;
@@ -60,26 +61,7 @@ public class PlayerController : MonoBehaviour {
 	
 	void FixedUpdate () {
 		movePlayer();
-		
-		//GetDirection
-		if(isFacingRight) {
-			directionMultiplier = 1;
-			myDirection = myTransform.TransformDirection(Vector3.right);
-
-			//flip sprite to facing direction
-			if(mySprite != null){
-				mySprite.eulerAngles = new Vector3(mySprite.eulerAngles.x, 0, mySprite.eulerAngles.z);
-			}
-		}
-		else {
-			directionMultiplier = -1;
-			myDirection = myTransform.TransformDirection(Vector3.left);
-
-			//flip sprite to facing direction
-			if(mySprite != null){
-				mySprite.eulerAngles = new Vector3(mySprite.eulerAngles.x, 180, mySprite.eulerAngles.z);
-			}
-		}
+		//SetSpriteDirection ();
 
 		//Debug.DrawLine(myTransform.position, new Vector3(myTransform.position.x + (directionMultiplier * 5), myTransform.position.y, myTransform.position.z), Color.red);
 	}
@@ -96,10 +78,12 @@ public class PlayerController : MonoBehaviour {
 
 	void movePlayer(){
 		if(Input.GetKey(leftBtn)){
+			SetSpriteDirection (false);
 			isFacingRight = false;
 			myTransform.position += Vector3.left * speed * Time.deltaTime;
 		}
 		if(Input.GetKey(rightBtn)){
+			SetSpriteDirection (true);
 			isFacingRight = true;
 			myTransform.position += Vector3.right * speed * Time.deltaTime;
 		}
@@ -111,12 +95,36 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void shootProjectile(){	
+	void SetSpriteDirection(bool myIsFacingRight){
+		if(myIsFacingRight) {
+			directionMultiplier = 1;
+			myDirection = myTransform.TransformDirection(Vector3.right);
+			
+			//flip sprite to facing direction
+			if(mySprite != null){
+				mySprite.eulerAngles = new Vector3(mySprite.eulerAngles.x, 0, mySprite.eulerAngles.z);
+			}
+		}
+		else {
+			directionMultiplier = -1;
+			myDirection = myTransform.TransformDirection(Vector3.left);
+			
+			//flip sprite to facing direction
+			if(mySprite != null){
+				mySprite.eulerAngles = new Vector3(mySprite.eulerAngles.x, 180, mySprite.eulerAngles.z);
+			}
+		}
+	}
 
-		if(Input.GetKeyDown(actionBtn) && currentProjectileCount < 3){
-			//play shooting sound
-			float vol = Random.Range (volLowRange, volHighRange);
-			audioSource.PlayOneShot(shootSound,vol);
+	void shootProjectile(){	
+		//Super quick hack for those without numpads to shoot player2
+		KeyCode secondaryActBtn = KeyCode.Asterisk;
+		if (actionBtn == KeyCode.Keypad0) {
+			secondaryActBtn = KeyCode.Slash;
+		}
+
+		//SHOOT
+		if((Input.GetKeyDown(actionBtn) || Input.GetKeyDown(secondaryActBtn)) && currentProjectileCount < 3){
 
 			//find which projectile to shoot
 			switch(currentProjectile)
@@ -143,7 +151,6 @@ public class PlayerController : MonoBehaviour {
 	IEnumerator setSpecialProjectileTime(float waitTime) {
 		if(currentProjectile != "default"){
 			yield return new WaitForSeconds(waitTime);
-			Debug.Log ("Time's up!");
 			currentProjectile = "default";
 		}
 	}
@@ -164,44 +171,6 @@ public class PlayerController : MonoBehaviour {
 		renderer.material.color = Color.white;
 		isRespawing = false;
 	}
-	
-	void OnTriggerEnter(Collider col){	
-		string colTag = col.gameObject.tag;
-
-		if (colTag != null) {
-
-		//PICKUP ITEM
-			if(colTag.Contains("Item_")) {
-				switch(colTag)
-				{
-					case "Item_Explosive":
-						currentProjectile = "explosive";
-						break;
-					case "Item_Multi":
-						currentProjectile = "multi";
-						break;
-					default:
-						currentProjectile = "default";
-						break;
-				}
-				float tempProjectileDuration = 5.0f;
-				StartCoroutine(setSpecialProjectileTime(tempProjectileDuration));
-				StartCoroutine(ColorFlash(tempProjectileDuration, 0.3f, Color.blue));
-			}
-
-		//HIT PROJECTILE
-			if(colTag.Contains("Projectile_") && !isRespawing && !colTag.Contains(myTag)){
-				ProjectileController pc = col.gameObject.GetComponent<ProjectileController>();
-
-				KillSelf(pc.myCreator);
-			}
-
-		//HIT EXPLOSION
-			if(colTag.Contains("Explosion_Damaging") && !isRespawing && !colTag.Contains(myTag)){
-				KillSelf(colTag);
-			}
-		}
-	}
 
 	void KillSelf(string colTag){
 		//decrease player health
@@ -214,7 +183,7 @@ public class PlayerController : MonoBehaviour {
 		if (health <= 0) {
 			healthText.text = myTag + ": " + health;
 			Destroy (this.gameObject);
-			WorldController.EndGame (colTag, "Win by Kill");
+			WorldController.EndGame (colTag, "Kill Victory");
 		} else {
 			//move to respawn point
 			myTransform.position = respawnPoint.position;
@@ -225,6 +194,50 @@ public class PlayerController : MonoBehaviour {
 
 	}
 	
+	void OnTriggerEnter(Collider col){	
+		string colTag = col.gameObject.tag;
+		
+		if (colTag != null) {
+			
+			//PICKUP ITEM
+			if(colTag.Contains("Item_")) {
+				
+				//play sound
+				float vol = Random.Range (volLowRange, volHighRange);
+				audioSource.PlayOneShot(pickupSound,vol);
+				
+				switch(colTag)
+				{
+				case "Item_Explosive":
+					currentProjectile = "explosive";
+					break;
+				case "Item_Multi":
+					currentProjectile = "multi";
+					break;
+				default:
+					currentProjectile = "default";
+					break;
+				}
+				float tempProjectileDuration = 5.0f;
+				StartCoroutine(setSpecialProjectileTime(tempProjectileDuration));
+				StartCoroutine(ColorFlash(tempProjectileDuration, 0.3f, Color.blue));
+			}
+			
+			//HIT PROJECTILE
+			if(colTag.Contains("Projectile_") && !isRespawing && !colTag.Contains(myTag)){
+				ProjectileController pc = col.gameObject.GetComponent<ProjectileController>();
+				
+				KillSelf(pc.myCreator);
+			}
+			
+			//HIT EXPLOSION
+			if(colTag.Contains("Explosion_Damaging") && !isRespawing && !colTag.Contains(myTag)){
+				ExplosionController ec = col.gameObject.GetComponent<ExplosionController>();
+				
+				KillSelf(ec.myCreator);
+			}
+		}
+	}
 	//GUI text
 	void OnGUI(){
 		healthText.text = "x " + health;

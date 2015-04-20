@@ -207,7 +207,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Press SPACE to reset
+  m_Text: Press SHIFT to reset
 --- !u!222 &250701446
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -332,7 +332,6 @@ GameObject:
   - 33: {fileID: 761368050}
   - 65: {fileID: 761368049}
   - 23: {fileID: 761368048}
-  - 114: {fileID: 761368052}
   m_Layer: 0
   m_Name: BG
   m_TagString: Untagged
@@ -350,7 +349,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_Materials:
-  - {fileID: 2100000, guid: c801b33348776c74380ab13a869bc3db, type: 2}
+  - {fileID: 2100000, guid: c3e63ff4e734eb4459323cf8ac461c96, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 1
@@ -395,18 +394,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!114 &761368052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 761368047}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e0174d44fb24eb42acc1aa12f64d228, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  checkpointContainer: {fileID: 0}
 --- !u!1 &803118151
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,7 +453,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: ______ Wins!
+  m_Text: 
 --- !u!222 &803118154
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -592,7 +579,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Won By ____ Condition
+  m_Text: 
 --- !u!222 &1818853901
 CanvasRenderer:
   m_ObjectHideFlags: 0

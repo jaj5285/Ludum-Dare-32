@@ -13,13 +13,12 @@ public class WorldController : MonoBehaviour {
 		DontDestroyOnLoad(transform.gameObject);
 	}
 
-	void Start(){		
-		InvokeRepeating ("spawnSuperFruit", 16, 10.0f);
-	}
-	
-	void GetTotalCheckpointCount(){		
-		foreach (Transform child in checkpointContainer) {
-			totalCheckpoints++;
+	void GetTotalCheckpointCount(){	
+		totalCheckpoints = 0;
+		if (checkpointContainer != null) {
+			foreach (Transform child in checkpointContainer) {
+				totalCheckpoints++;
+			}
 		}
 	}
 
@@ -31,7 +30,7 @@ public class WorldController : MonoBehaviour {
 				
 		//Did player win?
 		if(playerCaptureCount >= totalCheckpoints){	
-			EndGame(playerTag, "Checkpoint Win Condition");
+			EndGame(playerTag, "Flag Capture Victory");
 		}
 		Debug.Log (playerTag + " Captured: "+playerCaptureCount + " of "+totalCheckpoints);
 	}

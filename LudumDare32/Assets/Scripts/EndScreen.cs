@@ -8,16 +8,16 @@ public class EndScreen : MonoBehaviour {
 	public Text winConditionText;
 
 	void Update () {
-		if(Input.GetKeyUp (KeyCode.Space) ) {
+		if(Input.GetKeyUp (KeyCode.LeftShift) || Input.GetKeyUp (KeyCode.RightShift) ) {
 			Application.LoadLevel("main");
 		}
-		if(Input.GetKeyUp (KeyCode.A) ) {
+		if(Input.GetKeyUp (KeyCode.X) ) {
 			Application.LoadLevel("credits");
 		}
 	}
 
 	void OnGUI(){
 		winnerText.text = WorldController.winner +" Wins!";
-		winConditionText.text = "Won by " + WorldController.winCondition;
+		winConditionText.text = WorldController.winCondition;
 	}
 }

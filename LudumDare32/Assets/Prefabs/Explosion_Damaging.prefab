@@ -204,6 +204,7 @@ MonoBehaviour:
   xyGrowth: .100000001
   defaultGrowth: .0399999991
   giantGrowth: .100000001
+  myCreator: Player1
   kaboomSound: {fileID: 8300000, guid: 1f7ae4c40ffb8ce4d9ea36799bdddf6d, type: 3}
 --- !u!212 &21271006
 SpriteRenderer:

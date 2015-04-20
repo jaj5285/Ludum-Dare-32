@@ -6,11 +6,12 @@ public class ExplosionController : MonoBehaviour {
 	private Transform myTransform;
 	public float timer;
 	public float xyGrowth = 0.1f;
-
 	public float defaultGrowth = 0.1f;
 	public float giantGrowth = 0.4f;
-	
+	public string myCreator;
 	public AudioClip kaboomSound;
+
+
 	private AudioSource audioSource;
 	private float volLowRange = .5f;
 	private float volHighRange = 1.0f;
@@ -59,9 +60,11 @@ public class ExplosionController : MonoBehaviour {
 		if (isDamagingExplosion) {
 			gameObject.tag = "Explosion_Damaging_" + playerTag;
 			xyGrowth = giantGrowth;
+			myCreator = playerTag;
 		} else {			
 			gameObject.tag = "Explosion";
 			xyGrowth = defaultGrowth;
+			myCreator = playerTag;
 		}
 	}
 }
