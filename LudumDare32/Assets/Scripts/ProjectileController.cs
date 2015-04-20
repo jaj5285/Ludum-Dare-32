@@ -7,7 +7,9 @@ public class ProjectileController : MonoBehaviour {
 	public string myCreator;	
 	public Vector3 myDirection;
 	public GameObject explosionImage;
-	private Transform myTransform;
+	public bool isScreenShaker = false;
+	public Transform myTransform;
+	public bool isDamagingExplosion = false;
 	
 	void Start () {
 		myTransform = transform;
@@ -16,15 +18,10 @@ public class ProjectileController : MonoBehaviour {
 	void Update () {		
 		//GameObject = projectile (lazer), make projectile go up		
 		myTransform.Translate (myDirection * speed * Time.deltaTime);
-		
-		Vector3 cameraView = Camera.main.WorldToScreenPoint (myTransform.position);
-		if (cameraView.x > Screen.width) {
-			DestroyObject(this.gameObject);
-		}
 	}
 
 	void OnTriggerEnter(Collider col){
-		if(!col.gameObject.CompareTag(myCreator)){
+		if(!col.gameObject.CompareTag(myCreator) && !col.gameObject.tag.Contains("Checkpoint") && !col.gameObject.tag.Contains("Explosion")){
 
 			if(col.gameObject.tag.Contains("Player")){
 				//if hit other player, explode only if other player is not respawing
@@ -42,11 +39,15 @@ public class ProjectileController : MonoBehaviour {
 		Destroy(this.gameObject);
 		
 		//instantate explosion
+		ExplosionController ec = explosionImage.GetComponent<ExplosionController>();
+		ec.init(myCreator, isDamagingExplosion);	
 		Instantiate(explosionImage, myTransform.position, Quaternion.identity);
 		
 		//shake camera
-		CameraController cc = Camera.main.GetComponent<CameraController> ();
-		cc.shakeCamera ();
+		if(isScreenShaker){
+			CameraController cc = Camera.main.GetComponent<CameraController> ();
+			cc.shakeCamera ();
+		}
 	}
 
 	public void init(bool isRightDirection, string playerTag){

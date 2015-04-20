@@ -14,34 +14,40 @@ public class PlayerController : MonoBehaviour {
 	public KeyCode upBtn;
 	public KeyCode downBtn;
 	public KeyCode actionBtn;
+	public AudioClip shootSound;
+	public AudioClip deathSound;
 
 	public bool isRespawing = false;
-	public GameObject projectileFab;
+	public GameObject defaultProjectileFab;
+	public GameObject explosiveProjectileFab;	
+	public GameObject multiProjectileFab;
+
+	public string currentProjectile = "default";
+
 	public Transform respawnPoint;
 	
 	private bool isFacingRight = true;
 	private int directionMultiplier = 1; //1 = right, -1 = left
 	private Transform myTransform;
 	private Rigidbody rb;
-	private float xRotation;
 	private Vector3 myDirection;
 	private Transform mySprite;
 	private string myTag;
 	private int currentProjectileCount;
 	private Renderer renderer;
+	private AudioSource audioSource;
+	private float volLowRange = .5f;
+	private float volHighRange = 1.0f;
 
 	private float timer;
 	private float flashDuration = 3.0f;
 
-	
-	private int Countdown = 3;
-
-	void Start () {
+	void Awake () {
 		myTransform = transform;
 		rb = GetComponent<Rigidbody> ();
-		xRotation = myTransform.eulerAngles.x;
 		myTag = this.gameObject.tag;
 		timer = flashDuration;
+		audioSource = GetComponent<AudioSource>();
 
 		foreach(Transform child in transform){
 			if(child.gameObject.tag == "Sprite"){
@@ -86,8 +92,6 @@ public class PlayerController : MonoBehaviour {
 		
 		currentProjectileCount = GameObject.FindGameObjectsWithTag ("Projectile_" + myTag).Length;
 		shootProjectile();
-
-
 	}
 
 	void movePlayer(){
@@ -107,30 +111,53 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void shootProjectile(){		
+	void shootProjectile(){	
+
 		if(Input.GetKeyDown(actionBtn) && currentProjectileCount < 3){
+			//play shooting sound
+			float vol = Random.Range (volLowRange, volHighRange);
+			audioSource.PlayOneShot(shootSound,vol);
 
-			ProjectileController pc = projectileFab.GetComponent<ProjectileController>();
-			pc.init(isFacingRight, gameObject.tag);
+			//find which projectile to shoot
+			switch(currentProjectile)
+			{
+			case "explosive":
+				ExplosiveProjectileController epc = explosiveProjectileFab.GetComponent<ExplosiveProjectileController>();
+				epc.init(isFacingRight, gameObject.tag);				
+				Instantiate(explosiveProjectileFab, myTransform.position, Quaternion.identity);
+				break;
+			case "multi":
+				ProjectileController mpc = multiProjectileFab.GetComponent<ProjectileController>();
+				mpc.init(isFacingRight, gameObject.tag);				
+				Instantiate(defaultProjectileFab, myTransform.position, Quaternion.identity);
+				break;
+			default:
+				ProjectileController pc = defaultProjectileFab.GetComponent<ProjectileController>();
+				pc.init(isFacingRight, gameObject.tag);				
+				Instantiate(defaultProjectileFab, myTransform.position, Quaternion.identity);
+				break;
+			}
+		}
+	}
 
-			Instantiate(projectileFab, myTransform.position, Quaternion.identity);
-
-			//push back player
-			//rb.AddForce(new Vector3(-1 * directionMultiplier * 2.0f, 0.0f, 0.0f) * 100);
+	IEnumerator setSpecialProjectileTime(float waitTime) {
+		if(currentProjectile != "default"){
+			yield return new WaitForSeconds(waitTime);
+			Debug.Log ("Time's up!");
+			currentProjectile = "default";
 		}
 	}
 	
-	IEnumerator InvincibleFlash(float time, float intervalTime)
+	IEnumerator ColorFlash(float time, float intervalTime, Color flashColor)
 	{
 		isRespawing = true;
-		Color[] colors = {Color.red, Color.white};
+		Color[] colors = {flashColor, Color.white};
 		float elapsedTime = 0f;
 		int index = 0;
 		while(elapsedTime < time )
 		{
 			renderer.material.color = colors[index % 2];
-
-			elapsedTime += 0.5f;
+			elapsedTime += intervalTime;
 			index++;
 			yield return new WaitForSeconds(intervalTime);
 		}	
@@ -138,33 +165,68 @@ public class PlayerController : MonoBehaviour {
 		isRespawing = false;
 	}
 	
-	void OnTriggerEnter(Collider col){
-		if (col.gameObject.tag != null) {
-			if(col.gameObject.tag.Contains("Projectile_") && !isRespawing){
-				ProjectileController pc = col.gameObject.GetComponent<ProjectileController> ();
+	void OnTriggerEnter(Collider col){	
+		string colTag = col.gameObject.tag;
 
-				//only die if colliding with other player's projectiles
-				if (pc.myCreator != myTag && col.gameObject.tag != "Projectile_" + myTag) {	
-					//decrease player health
-					health--;
+		if (colTag != null) {
 
-					//move to respawn point
-					myTransform.position = respawnPoint.position;
-
-					//Make player flash and be invincible for a while
-					StartCoroutine(InvincibleFlash(5.0f, 0.2f));
-
-					if(health <= 0){
-						healthText.text = myTag + ": " + health;
-						Destroy(this.gameObject);
-					}
+		//PICKUP ITEM
+			if(colTag.Contains("Item_")) {
+				switch(colTag)
+				{
+					case "Item_Explosive":
+						currentProjectile = "explosive";
+						break;
+					case "Item_Multi":
+						currentProjectile = "multi";
+						break;
+					default:
+						currentProjectile = "default";
+						break;
 				}
+				float tempProjectileDuration = 5.0f;
+				StartCoroutine(setSpecialProjectileTime(tempProjectileDuration));
+				StartCoroutine(ColorFlash(tempProjectileDuration, 0.3f, Color.blue));
+			}
+
+		//HIT PROJECTILE
+			if(colTag.Contains("Projectile_") && !isRespawing && !colTag.Contains(myTag)){
+				ProjectileController pc = col.gameObject.GetComponent<ProjectileController>();
+
+				KillSelf(pc.myCreator);
+			}
+
+		//HIT EXPLOSION
+			if(colTag.Contains("Explosion_Damaging") && !isRespawing && !colTag.Contains(myTag)){
+				KillSelf(colTag);
 			}
 		}
+	}
+
+	void KillSelf(string colTag){
+		//decrease player health
+		health--;
+
+		//play death sound
+		float vol = Random.Range (volLowRange, volHighRange);
+		audioSource.PlayOneShot(deathSound,vol);
+		
+		if (health <= 0) {
+			healthText.text = myTag + ": " + health;
+			Destroy (this.gameObject);
+			WorldController.EndGame (colTag, "Win by Kill");
+		} else {
+			//move to respawn point
+			myTransform.position = respawnPoint.position;
+		
+			//Make player flash and be invincible for a while
+			StartCoroutine (ColorFlash (5.0f, 0.3f, Color.red));
+		}
+
 	}
 	
 	//GUI text
 	void OnGUI(){
-		healthText.text = myTag + ": " + health;
+		healthText.text = "x " + health;
 	}
 }

@@ -7,10 +7,18 @@ TagManager:
   - Player1
   - Player2
   - Sprite
-  - Statue
+  - CheckpointContainer
   - Projectile_Player1
   - Projectile_Player2
-  - Projectile
+  - Checkpoint
+  - Checkpoint_Player1
+  - Checkpoint_Player2
+  - Item_Explosive
+  - Item_Multi
+  - Explosion_Damaging_Player1
+  - Explosion_Damaging_Player2
+  - Explosion_Damaging
+  - Explosion
   layers:
   - Default
   - TransparentFX
@@ -21,7 +29,7 @@ TagManager:
   - 
   - 
   - Projectile
-  - 
+  - item
   - 
   - 
   - 

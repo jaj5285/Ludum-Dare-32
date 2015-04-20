@@ -47,10 +47,17 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\CameraController.cs" />
+     <Compile Include="Assets\Scripts\CheckpointController.cs" />
+     <Compile Include="Assets\Scripts\EndScreen.cs" />
      <Compile Include="Assets\Scripts\ExplosionController.cs" />
+     <Compile Include="Assets\Scripts\ExplosiveProjectileController.cs" />
+     <Compile Include="Assets\Scripts\GameMusic.cs" />
+     <Compile Include="Assets\Scripts\ItemController.cs" />
+     <Compile Include="Assets\Scripts\ItemSpawnerController.cs" />
      <Compile Include="Assets\Scripts\PlayerController.cs" />
      <Compile Include="Assets\Scripts\ProjectileController.cs" />
-     <Compile Include="Assets\Scripts\StatueWinController.cs" />
+     <Compile Include="Assets\Scripts\StartScreen.cs" />
+     <Compile Include="Assets\Scripts\WorldController.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Users/Josi/Downloads/Unity5/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

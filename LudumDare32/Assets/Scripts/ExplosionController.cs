@@ -5,11 +5,26 @@ public class ExplosionController : MonoBehaviour {
 		
 	private Transform myTransform;
 	public float timer;
-	public float xGrowth = 0.1f;
-	public float yGrowth = 0.1f;
+	public float xyGrowth = 0.1f;
 
+	public float defaultGrowth = 0.1f;
+	public float giantGrowth = 0.4f;
+	
+	public AudioClip kaboomSound;
+	private AudioSource audioSource;
+	private float volLowRange = .5f;
+	private float volHighRange = 1.0f;
+
+	void Awake(){		
+		audioSource = GetComponent<AudioSource>();
+	}
 
 	void Start () {
+		//play shooting sound
+		if(audioSource != null){
+			float vol = Random.Range (volLowRange, volHighRange);
+			audioSource.PlayOneShot(kaboomSound,vol);
+		}
 		myTransform = transform;
 		timer = 2f;
 	}
@@ -37,6 +52,16 @@ public class ExplosionController : MonoBehaviour {
 	}
 
 	void grow () {
-		myTransform.localScale += new Vector3 (xGrowth, yGrowth, 0);
+		myTransform.localScale += new Vector3 (xyGrowth, xyGrowth, 0);
+	}
+
+	public void init(string playerTag, bool isDamagingExplosion){
+		if (isDamagingExplosion) {
+			gameObject.tag = "Explosion_Damaging_" + playerTag;
+			xyGrowth = giantGrowth;
+		} else {			
+			gameObject.tag = "Explosion";
+			xyGrowth = defaultGrowth;
+		}
 	}
 }
